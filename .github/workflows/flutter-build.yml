@@ -31,10 +31,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      # تحديث إصدار فلاتر للأندرويد إلى 3.35.2
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: '3.32.4'
+          flutter-version: '3.35.2'
           channel: 'stable'
           cache: true
 
@@ -83,15 +84,16 @@ jobs:
           echo "storeFile=upload-keystore.jks" >> mobile/android/key.properties
           echo "✓ Keystore configured successfully"
 
+      # إضافة تعديل رقم الإصدار تلقائياً عند بناء الـ APK
       - name: Build APK (Release)
         working-directory: mobile
         run: |
           if [ "${{ steps.check_secrets.outputs.has_keystore }}" == "true" ]; then
             echo "Building signed release APK..."
-            flutter build apk --release
+            flutter build apk --release --build-name=1.0.0 --build-number=${{ github.run_number }}
           else
             echo "Building debug-signed APK..."
-            flutter build apk --debug
+            flutter build apk --debug --build-name=1.0.0 --build-number=${{ github.run_number }}
           fi
 
       - name: Upload APK artifact
@@ -104,10 +106,11 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
+      # إضافة تعديل رقم الإصدار تلقائياً عند بناء الـ App Bundle للمتجر
       - name: Build App Bundle (Release)
         if: steps.check_secrets.outputs.has_keystore == 'true'
         working-directory: mobile
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --build-name=1.0.0 --build-number=${{ github.run_number }}
 
       - name: Upload AAB artifact
         if: steps.check_secrets.outputs.has_keystore == 'true'
@@ -128,10 +131,11 @@ jobs:
         with:
           persist-credentials: false
 
+      # تحديث إصدار فلاتر للآيفون إلى 3.35.2
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: '3.32.4'
+          flutter-version: '3.35.2'
           channel: 'stable'
           cache: true
 
@@ -158,9 +162,10 @@ jobs:
         working-directory: mobile
         run: flutter test
 
+      # إضافة تعديل رقم الإصدار تلقائياً عند بناء نسخة الـ iOS
       - name: Build iOS (No Code Signing)
         working-directory: mobile
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign --build-name=1.0.0 --build-number=${{ github.run_number }}
 
       - name: Create IPA archive info
         working-directory: mobile
